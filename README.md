@@ -3,10 +3,10 @@
 ## 📌 Description
 CodeOverflow is a collaborative coding platform where developers can write, test, and share their code in real-time. It supports multiple programming languages and provides a seamless experience for teams to work together efficiently.
 
-## 📷 Screenshots
+## 📷 Screenshots & Demo
+![Demo GIF](https://github.com/jaryan728/The-Codeoverflow/blob/a6529b950ec457ab33a55d9e5ecb6d9bc6816f58/Untitledvideo-MadewithClipchamp-ezgif.com-speed.gif)
 ![image](https://github.com/user-attachments/assets/65a6f779-e323-4d67-bc27-0bb6fb40ee25)
 ![image](https://github.com/user-attachments/assets/b0042493-da0c-4a18-bc3a-e728233ec010)
-
 
 
 ## 🛠️ Tech Stack
