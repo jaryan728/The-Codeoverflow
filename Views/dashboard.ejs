@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeOverflow Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/061544fe86.js" crossorigin="anonymous"></script>
+  <style>
+    body { background: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+    .sidebar { background: #1e293b; backdrop-filter: blur(10px); }
+    .tab-link:hover { background: #334155; }
+    .active-tab { background: #3b82f6; color: #ffffff; }
+    .top-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 50; background: #1e293b; }
+    .content-container { margin-top: 4rem; }
+    .dashboard-tab-link { background: #475569; color: #e2e8f0; }
+    .dashboard-tab-link.active-dashboard-tab { background: #3b82f6; color: #ffffff; }
+    .bg-section { background: #1e293b; padding: 1rem; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="top-bar w-full p-4 flex justify-between items-center shadow-md">
+    <h2 class="text-2xl font-bold text-cyan-400">CodeOverflow</h2>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.profilePic %>" alt="User DP" class="w-10 h-10 rounded-full border-2 border-cyan-400">
+      <span class="text-white font-semibold"><%= user.fname %></span>
+    </div>
+  </div>
+  <div class="flex h-screen flex-col content-container">
+    <div class="flex flex-1">
+      <div class="w-64 sidebar p-5 flex flex-col fixed h-full">
+        <nav class="flex flex-col gap-4">
+          <button class="tab-link text-left text-white p-3 rounded-md active-tab" data-tab="dashboard">🏠 Dashboard</button>
+          <button class="tab-link text-left text-white p-3 rounded-md" data-tab="tech-updates">📖 Tech Updates</button>
+          <button class="tab-link text-left text-white p-3 rounded-md" data-tab="learn-ai">🤖 Learn with AI</button>
+          <button class="tab-link text-left text-white p-3 rounded-md" data-tab="profiles">👥 Profiles</button>
+          <button class="tab-link text-left text-white p-3 rounded-md" onclick="window.location.href='/logout'">🚪 Logout</button>
+        </nav>
+      </div>
+      <div class="flex-1 p-6 ml-64 overflow-y-auto">
+        <div id="dashboard" class="tab-content">
+          <div class="flex gap-4 mb-4">
+            <button class="dashboard-tab-link p-3 rounded-md active-dashboard-tab w-1/2" data-dashboard-tab="discussion">💬 Discussion</button>
+            <button class="dashboard-tab-link p-3 rounded-md w-1/2" data-dashboard-tab="updates">📰 Updates</button>
+          </div>
+          <div id="discussion" class="dashboard-tab-content">
+            <div class="mt-6 bg-section">
+              <h2 class="text-2xl mb-4">Create a New Post</h2>
+              <form id="post-form" class="flex flex-col items-center" action="/posts" method="post">
+                <textarea id="post-content" class="w-full border-2 border-gray-500 rounded-md p-2 text-black" name="content" rows="4" placeholder="What’s on your mind?" required ></textarea>
+                <button type="submit" class="mt-4 bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Post</button>
+              </form>
+            </div>
+            <div id="posts-container" class="mt-6 bg-section">
+                <% posts.forEach(post => { %>
+                  <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg border-2 border-gray-600 transition-transform transform hover:scale-105 hover:shadow-xl hover:border-blue-500 mb-4">
+                    <div class="flex items-center gap-3 mb-3">
+                      <img src="<%=post.user.profilePic %>" alt="User" class="w-10 h-10 rounded-full border-2 border-cyan-400">
+                      <div>
+                        <p class="font-bold text-cyan-400"><%= post.user.fname %></p>
+                        <p class="text-gray-400 text-sm"><%= post.timestamp %></p>
+                      </div>
+                    </div>
+                    <p class="mb-4"><%= post.content %></p>
+                    <div class="flex gap-4">
+                      <button class="like-btn text-indigo-400 hover:text-indigo-600 flex items-center gap-1" data-post-id="<%= post._id %>" onclick="toggle('<%= post._id %>')">
+                        <i class="fas fa-thumbs-up"></i> <span class="like-count"><%=post.likes.length%></span>
+                      </button>                    
+                      <button class="comment-btn text-gray-400 hover:text-white flex items-center gap-1" data-post-id="<%= post._id %>">
+                        <i class="fas fa-comment"></i> <span>Comment</span>
+                        <button onclick="show('<%= post._id %>')"><i class="fa-solid fa-caret-down"></i></button>
+                        <div id="comment-section-<%= post._id %>" class="comment-section hidden mt-4">
+                          <form class="flex flex-col">
+                            <textarea class="w-full p-2 rounded-md text-black" rows="2" placeholder="Add a comment..."></textarea>
+                            <button type="submit" class="mt-2 bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 self-end">Submit</button>
+                          </form>
+                          <div class="mt-4 space-y-2">
+                            <div class="bg-gray-700 p-2 rounded-md">
+                              <p class="text-sm font-bold text-cyan-400">User Name</p>
+                              <p class="text-sm">This is a sample comment.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ <script>
+  function show(postId) {
+    const commentSection = document.querySelector(`#comment-section-${postId}`);
+    commentSection.classList.toggle("hidden");
+  }
+
+  function toggle(postId) {
+    fetch(`/like/${postId}`, { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            const likeCountSpan = document.querySelector(`[data-post-id="${postId}"] .like-count`);
+            if (likeCountSpan) {
+                likeCountSpan.textContent = data.likes;
+            }
+        })
+        .catch(error => console.error("Error updating like:", error));
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".like-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            const postId = this.dataset.postId;
+            toggle(postId);
+        });
+    });
+
+    document.querySelectorAll(".tab-link").forEach(button => {
+        button.addEventListener("click", function () {
+            document.querySelectorAll(".tab-link").forEach(btn => btn.classList.remove("active-tab"));
+            this.classList.add("active-tab");
+        });
+    });
+
+    document.querySelectorAll(".dashboard-tab-link").forEach(button => {
+        button.addEventListener("click", function () {
+            document.querySelectorAll(".dashboard-tab-link").forEach(btn => btn.classList.remove("active-dashboard-tab"));
+            this.classList.add("active-dashboard-tab");
+        });
+    });
+});
+
+ </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+    <title>CodeOverflow - Register</title>
+    <style>
+      body {
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        background: #0a192f;
+        overflow: auto;
+      }
+      .form-container {
+        background: rgba(26, 26, 46, 0.95);
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0px 0px 20px rgba(0, 230, 230, 0.5);
+      }
+      .neon-text {
+        text-shadow: 0px 0px 10px #0ff, 0px 0px 20px #0ff;
+      }
+      .neon-btn:hover {
+        box-shadow: 0px 0px 10px #00e6e6;
+      }
+      #particles-js {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="particles-js"></div>
+    <nav class="w-full h-16 bg-gray-900 flex items-center justify-between px-6 shadow-lg fixed">
+      <div class="flex items-center gap-4">
+        <img src="./images/Designer.jpeg" alt="Logo" class="h-10 w-10 rounded-full" />
+        <div class="text-3xl font-bold neon-text">CodeOverflow</div>
+      </div>
+      <div class="flex gap-6 text-lg">
+        <a href="/" class="text-gray-300 hover:text-cyan-400 transition">Home</a>
+        <a href="#about" class="text-gray-300 hover:text-cyan-400 transition">About</a>
+        <a href="#contact" class="text-gray-300 hover:text-cyan-400 transition">Contact</a>
+      </div>
+    </nav>
+
+    <section class="flex justify-center py-12">
+      <div class="form-container w-full max-w-lg">
+        <h2 class="text-2xl font-bold text-center mb-6 text-cyan-400">Register to CodeOverflow</h2>
+        <form class="space-y-4" action="/register" method="post">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-300">First Name</label>
+              <input type="text" name="fname" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" required />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-300">Last Name</label>
+              <input type="text" name="lname" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" required />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Mobile Number</label>
+            <input type="text" name="mob" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Email</label>
+            <input type="email" name="mail" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Password</label>
+            <input type="password" name="pass" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">GitHub Profile URL</label>
+            <input type="url" name="git" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" placeholder="Enter your GitHub Profile URL">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Address</label>
+            <textarea name="address" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" rows="3"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Upload Profile Picture</label>
+            <input type="file" name="file-upload" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" />
+          </div>
+          <div class="flex justify-center">
+            <button type="submit" class="bg-cyan-500 text-black py-2 px-4 rounded neon-btn hover:bg-cyan-600">
+              Register
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer class="w-full bg-gray-900 text-gray-400 py-4 text-center mt-12">
+      <p>&copy; 2025 CodeOverflow. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+      particlesJS("particles-js", {
+        particles: {
+          number: { value: 100, density: { enable: true, value_area: 800 } },
+          color: { value: "#00ffff" },
+          shape: { type: "line" },
+          opacity: { value: 0.7, random: false },
+          size: { value: 1, random: true },
+          move: { enable: true, speed: 1, direction: "none" }
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: { onhover: { enable: true, mode: "repulse" } },
+          modes: { repulse: { distance: 100, duration: 0.4 } }
+        }
+      });
+    </script>
+  </body>
+</html>

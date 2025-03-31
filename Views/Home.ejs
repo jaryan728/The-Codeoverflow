@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>CodeOverflow</title>
+    <style>
+      body {
+        background-color: #0a0a0a;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        overflow-y: auto;
+      }
+      .neon-text {
+        text-shadow: 0px 0px 10px #0ff, 0px 0px 20px #0ff;
+      }
+      .neon-btn:hover {
+        box-shadow: 0px 0px 10px #00e6e6;
+      }
+      #particles-js {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #0a0a0a;
+        z-index: -1;
+      }
+      .bounce-arrow {
+        position: absolute;
+        top: 80%;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: bounce 2s infinite;
+        font-size: 30px;
+      }
+      @keyframes bounce {
+        0%, 100% {
+          transform: translateX(-50%) translateY(20px);
+        }
+        50% {
+          transform: translateX(-50%) translateY(-10px);
+        }
+      }
+      .form-container {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0px 0px 20px rgba(0, 230, 230, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div id="particles-js"></div>
+    <!-- Navbar -->
+    <nav class="w-full h-16 bg-black flex items-center justify-between px-6 shadow-lg relative z-10">
+      <div class="flex items-center gap-4">
+        <img src="./images/Designer.jpeg" alt="Logo" class="h-10 w-10 rounded-full" />
+        <div class="text-3xl font-bold neon-text">CodeOverflow</div>
+      </div>
+      <div class="flex gap-6 text-lg">
+        <a href="#login-form" class="text-gray-300 hover:text-cyan-400 transition">Login</a>
+        <a href="#" class="text-gray-300 hover:text-cyan-400 transition">About</a>
+        <a href="#" class="text-gray-300 hover:text-cyan-400 transition">Contact</a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="flex flex-col md:flex-row h-screen items-center justify-center relative z-10">
+      <div class="w-full md:w-6/12 text-center p-8">
+        <h1 class="text-4xl md:text-5xl font-extrabold neon-text">The Ultimate Coding Community</h1>
+        <p class="mt-4 text-gray-300 text-lg">
+          Join CodeOverflow to connect with developers, solve coding challenges,
+          and learn new technologies.
+        </p>
+        <button class="mt-4 bg-cyan-500 px-4 py-2 rounded neon-btn hover:bg-cyan-600">Explore Community</button>
+      </div>
+    </section>
+    
+    <!-- Bouncing Arrow Indicator -->
+    <div class="bounce-arrow" id="scrollArrow">
+      <i class="fas fa-chevron-down"></i>
+    </div>
+    
+    <!-- Login Form -->
+    <section id="login-form" class="flex justify-center py-12 relative z-10">
+      <div class="form-container w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center mb-6 text-cyan-400">Sign in to your account</h2>
+        <form class="space-y-4" action="/login" method="post">
+          <div>
+            <label class="block text-sm text-gray-300">Email Address</label>
+            <input type="email" name="mail" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 focus:ring focus:ring-cyan-500" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Password</label>
+            <input type="password" name="pass" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 focus:ring focus:ring-cyan-500" required />
+          </div>
+          <input type="submit" class="w-full bg-cyan-500 text-black py-2 rounded neon-btn hover:bg-cyan-600" value="Sign in">
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-400">
+          Not a member? <a href="/register" class="text-cyan-400">Register</a>
+        </p>
+      </div>
+    </section>
+    
+
+    <!-- Footer -->
+    <footer class="w-full bg-black text-gray-400 py-4 text-center mt-12">
+      <p>&copy; 2025 CodeOverflow. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+      particlesJS("particles-js", {
+        particles: {
+          number: { value: 100, density: { enable: true, value_area: 800 } },
+          color: { value: "#00e6e6" },
+          shape: { type: "circle" },
+          opacity: { value: 0.5, random: false },
+          size: { value: 3, random: true },
+          line_linked: {
+            enable: true,
+            distance: 150,
+            color: "#00e6e6",
+            opacity: 0.4,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            speed: 3,
+            direction: "none",
+            random: false,
+            straight: false,
+            out_mode: "out",
+            bounce: false,
+          },
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: {
+            onhover: { enable: true, mode: "repulse" },
+            onclick: { enable: true, mode: "push" },
+            resize: true,
+          },
+          modes: {
+            repulse: { distance: 100, duration: 0.4 },
+            push: { particles_nb: 4 },
+          },
+        },
+        retina_detect: true,
+      });
+    </script>
+  </body>
+</html>

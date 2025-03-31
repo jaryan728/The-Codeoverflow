@@ -1,0 +1,19 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom animation for blinking text with delay and smooth flow */
+@keyframes blink {
+  0%, 100% {
+    color: #9CA3AF; /* gray-400 */
+  }
+  50% {
+    color: #FFFFFF; /* white */
+  }
+}
+
+.animate-blink {
+  animation: blink 2s infinite;
+  animation-delay: 1s;
+  transition: color 0.5s ease-in-out;
+}
