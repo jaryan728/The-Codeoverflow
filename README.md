@@ -35,7 +35,8 @@ CodeOverflow is a collaborative coding platform where developers can write, test
    ```
 5. Run the project:
    ```bash
-   npm start
+   nodemon index.js
+   
    ```
 6. Open in the browser:
    ```
