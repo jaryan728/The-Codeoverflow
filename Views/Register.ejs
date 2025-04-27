@@ -45,15 +45,20 @@
       </div>
       <div class="flex gap-6 text-lg">
         <a href="/" class="text-gray-300 hover:text-cyan-400 transition">Home</a>
-        <a href="#about" class="text-gray-300 hover:text-cyan-400 transition">About</a>
-        <a href="#contact" class="text-gray-300 hover:text-cyan-400 transition">Contact</a>
       </div>
     </nav>
 
     <section class="flex justify-center py-12">
       <div class="form-container w-full max-w-lg">
         <h2 class="text-2xl font-bold text-center mb-6 text-cyan-400">Register to CodeOverflow</h2>
-        <form class="space-y-4" action="/register" method="post">
+        <% if (messages.error && messages.error.length > 0) { %>
+          <div class="bg-red-500 text-white p-3 rounded mb-4">
+            <% messages.error.forEach(err => { %>
+              <p><%= err %></p>
+            <% }) %>
+          </div>
+        <% } %>
+        <form class="space-y-4" action="/register" method="post" enctype="multipart/form-data">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm text-gray-300">First Name</label>
@@ -93,7 +98,7 @@
               Register
             </button>
           </div>
-        </form>
+        </form>        
       </div>
     </section>
 

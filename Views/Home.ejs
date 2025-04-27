@@ -56,13 +56,11 @@
     <!-- Navbar -->
     <nav class="w-full h-16 bg-black flex items-center justify-between px-6 shadow-lg relative z-10">
       <div class="flex items-center gap-4">
-        <img src="./images/Designer.jpeg" alt="Logo" class="h-10 w-10 rounded-full" />
+        <img src="/images/Designer.jpeg" alt="Logo" class="h-10 w-10 rounded-full" />
         <div class="text-3xl font-bold neon-text">CodeOverflow</div>
       </div>
       <div class="flex gap-6 text-lg">
         <a href="#login-form" class="text-gray-300 hover:text-cyan-400 transition">Login</a>
-        <a href="#" class="text-gray-300 hover:text-cyan-400 transition">About</a>
-        <a href="#" class="text-gray-300 hover:text-cyan-400 transition">Contact</a>
       </div>
     </nav>
 
@@ -74,7 +72,6 @@
           Join CodeOverflow to connect with developers, solve coding challenges,
           and learn new technologies.
         </p>
-        <button class="mt-4 bg-cyan-500 px-4 py-2 rounded neon-btn hover:bg-cyan-600">Explore Community</button>
       </div>
     </section>
     
@@ -87,6 +84,13 @@
     <section id="login-form" class="flex justify-center py-12 relative z-10">
       <div class="form-container w-full max-w-md">
         <h2 class="text-2xl font-bold text-center mb-6 text-cyan-400">Sign in to your account</h2>
+        <% if (messages.error && messages.error.length > 0) { %>
+          <div class="bg-red-500 text-white p-3 rounded mb-4">
+            <% messages.error.forEach(err => { %>
+              <p><%= err %></p>
+            <% }) %>
+          </div>
+        <% } %>
         <form class="space-y-4" action="/login" method="post">
           <div>
             <label class="block text-sm text-gray-300">Email Address</label>
@@ -106,8 +110,12 @@
     
 
     <!-- Footer -->
-    <footer class="w-full bg-black text-gray-400 py-4 text-center mt-12">
+   <footer class="w-full bg-black text-gray-400 py-4 text-center mt-12">
       <p>&copy; 2025 CodeOverflow. All Rights Reserved.</p>
+      <div class="social-icons">
+        <a href="https://www.linkedin.com/in/aryan-jain08/" target="_blank"><i class="fab fa-linkedin"></i></a>
+        <a href="https://github.com/jaryan728/" target="_blank"><i class="fab fa-github"></i></a>
+      </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>

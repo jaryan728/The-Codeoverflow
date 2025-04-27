@@ -1,236 +1,312 @@
-const express = require('express');
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv'; // Load env variables
+import fetch from 'node-fetch';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { marked } from 'marked';
+import path from 'path';
+import session from 'express-session';
+import multer from 'multer';
+import flash from 'connect-flash';
+import { body, validationResult } from 'express-validator';
+import userModel from './Models/user.js';
+import postModel from './Models/posts.js';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
-const cookieParser = require('cookie-parser');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const path = require('path');
-const userModel = require('./Models/user');
-const postModel = require('./Models/posts');
-const session = require('express-session');
-const flash = require('connect-flash');
-const { console } = require('inspector');
+dotenv.config();
 
-// Middleware setup
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({
-    secret: 'secret', // Change this to a more secure secret
-    resave: false,
-    saveUninitialized: true
+  secret: 'secret', // hardcoded
+  resave: false,
+  saveUninitialized: true,
 }));
 app.use(flash());
 app.use(express.static(path.join(__dirname, 'Public')));
-app.set('views', path.join(__dirname, 'views'));
+app.set('images', path.join(__dirname, 'Public/images'));
+app.set('views', path.resolve('D:/Downloads/CodeOverflow/Views')); 
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
 
-// Home page
+const upload = multer({ dest: 'Public/uploads/' });
+
+// ---------------- ROUTES ---------------- //
+
+// Home
 app.get('/', (req, res) => {
-    let messages = {
-        error: req.flash('error')
-    };
-    res.render('Home', { messages });
+  let messages = { error: req.flash('error') };
+  res.render('Home', { messages });
 });
 
 // Register page
 app.get('/register', (req, res) => {
-    res.render('Register');
+  let messages = { error: req.flash('error') };
+  res.render('Register', { messages });
 });
 
-// Handle registration
-app.post('/register', async (req, res) => {
-    try {
-        const { fname, lname, mob, mail, address, git, pass } = req.body;
+// Handle Register
+app.post('/register', upload.single('file-upload'), [
+  body('fname').notEmpty().withMessage('First name is required'),
+  body('lname').notEmpty().withMessage('Last name is required'),
+  body('mob').isMobilePhone().withMessage('Invalid mobile number'),
+  body('mail').isEmail().withMessage('Invalid email address'),
+  body('pass').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('git').optional().isURL().withMessage('Invalid GitHub profile URL'),
+  body('address').optional().trim().escape()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array().map(err => err.msg).join(', '));
+    return res.redirect('/register');
+  }
 
-        // Check if the email already exists in the database
-        const existingUser = await userModel.findOne({ mail: mail });
-        if (existingUser) {
-            // If the email exists, redirect to /route
-            return res.redirect('/route');
-        }
+  try {
+    const { fname, lname, mob, mail, address, git, pass } = req.body;
+    const existingUser = await userModel.findOne({ mail });
 
-        // Proceed with registration
-        bcrypt.genSalt(10, async (err, salt) => {
-            if (err) {
-                return res.status(500).send('Error generating salt');
-            }
-
-            bcrypt.hash(pass, salt, async (err, hash) => {
-                if (err) {
-                    return res.status(500).send('Error hashing password');
-                }
-
-                // Create new user
-                let user = await userModel.create({
-                    fname: fname,
-                    lname: lname,
-                    address: address,
-                    mob: mob,
-                    git: git,
-                    mail: mail,
-                    pass: hash
-                });
-
-                // Generate JWT token
-                let token = jwt.sign({ mail: user.mail }, "secret");
-
-                // Set the token in a cookie
-                res.cookie("token", token);
-
-                // Render main page
-                res.redirect('/main'); // Redirect to the main page after successful login
-            });
-        });
-    } catch (error) {
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Handle login
-app.post('/login', async (req, res) => {
-    let { mail, pass } = req.body;
-    let user = await userModel.findOne({ mail });
-    let posts= await postModel.find();
-    console.log('started');
-    console.log(user);
-
-    if (!user) {
-        req.flash('error', 'Invalid email or password');
-        return res.redirect('/');
+    if (existingUser) {
+      req.flash('error', 'Email already exists. Please use a different email.');
+      return res.redirect('/register');
     }
 
-    bcrypt.compare(pass, user.pass, (err, result) => {
-        if (result) {
-            let token = jwt.sign({ mail: user.mail }, "secret");
-            res.cookie("token", token);
-            res.redirect('/main'); // Redirect to the main page after successful login
-        } else {
-            req.flash('error', 'Invalid email or password');
-            res.redirect('/'); // Render the home page with the error message
-        }
+    let image = '/images/default-user-icon.jpg';
+    if (req.file) {
+      image = `/uploads/${req.file.filename}`;
+    }
+
+    const hash = bcrypt.hashSync(pass, bcrypt.genSaltSync(10));
+
+    const user = await userModel.create({
+      fname, lname, address, mob, git, mail, pass: hash, image
     });
+
+    let token = jwt.sign({ mail: user.mail }, 'secret'); // hardcoded jwt secret
+    res.cookie("token", token);
+
+    res.redirect('/main');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal server error');
+  }
 });
 
-// Handle creating posts
-app.post('/posts', isloggedin, async (req, res) => {
-    let user = await userModel.findOne({ mail: req.user.mail });
-    let posts = await postModel.find();
-    let content = req.body.content;
-    console.log(req.body);
+// Login
+app.post('/login', async (req, res) => {
+  const { mail, pass } = req.body;
+  const user = await userModel.findOne({ mail });
 
-    let post = await postModel.create({
-        user: user._id,
-        content: content
+  if (!user) {
+    req.flash('error', 'Invalid email or password');
+    return res.redirect('/');
+  }
+
+  bcrypt.compare(pass, user.pass, (err, result) => {
+    if (result) {
+      let token = jwt.sign({ mail: user.mail }, 'secret'); // hardcoded jwt secret
+      res.cookie("token", token);
+      res.redirect('/main');
+    } else {
+      req.flash('error', 'Invalid email or password');
+      res.redirect('/');
+    }
+  });
+});
+
+// Middleware to check login
+function isloggedin(req, res, next) {
+  if (!req.cookies.token) return res.redirect('/');
+  try {
+    const data = jwt.verify(req.cookies.token, 'secret'); // hardcoded jwt secret
+    req.user = data;
+    next();
+  } catch (err) {
+    res.redirect('/');
+  }
+}
+
+// Main Dashboard
+app.get('/main', isloggedin, async (req, res) => {
+  try {
+    const posts = await postModel.find()
+    .sort({ date: -1 })
+      .populate("user")
+      .populate("comments.user");
+
+    const currentUser = await userModel.findOne({ mail: req.user.mail });
+    if (!currentUser) {
+      req.flash('error', 'User not found');
+      return res.redirect('/');
+    }
+
+    const messages = { error: req.flash('error') };
+    res.render('dashboard', { posts, user: currentUser, messages, aiAnswer: undefined });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal server error');
+  }
+});
+
+// Create a post
+app.post('/posts', isloggedin, async (req, res) => {
+  try {
+    const user = await userModel.findOne({ mail: req.user.mail });
+    const content = req.body.content.trim();
+
+    if (!content) {
+      req.flash('error', 'Post content cannot be empty');
+      return res.redirect('/main');
+    }
+
+    const post = await postModel.create({
+      user: user._id,
+      content
     });
 
     user.posts.push(post._id);
     await user.save();
-    console.log(posts);
+
     res.redirect('/main');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal server error');
+  }
 });
 
-// Main page
-app.get('/main', isloggedin, async function (req, res) {
-    try {
-        // Fetch all users along with their posts
-        let users = await userModel.find().populate('posts').exec();
-        let currentUser = await userModel.findOne({ mail: req.user.mail }).exec();
-        const posts = await postModel.find().populate("user").exec();
-
-        // Render the dashboard with posts and user info
-        res.render("dashboard", { posts, user:currentUser });
-        // res.render('dashboard', { users, user: currentUser });
-    } catch (error) {
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Middleware to check if user is logged in
-function isloggedin(req, res, next) {
-    if (!req.cookies.token) return res.redirect('/');
-
-    try {
-        let data = jwt.verify(req.cookies.token, "secret");
-        req.user = data;
-        next();
-    } catch (err) {
-        res.redirect('/');
-    }
-}
-
-// Handle logout
-app.get('/logout', (req, res) => {
-    res.cookie("token", "");
-    res.redirect('/');
-});
-app.get('/a',(req,res)=>{
-    res.render('dashboard');
-})
-
-// Start the server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
-
+// Like / Unlike a post
 app.post('/like/:postId', isloggedin, async (req, res) => {
-    try {
-        const post = await postModel.findById(req.params.postId);
-        if (!post) return res.status(404).json({ message: "Post not found" });
+  try {
+    const post = await postModel.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
-        const userId = req.user._id;  // Get logged-in user's ID
-        const likedIndex = post.likes.indexOf(userId);
+    const user = await userModel.findOne({ mail: req.user.mail });
 
-        if (likedIndex === -1) {
-            post.likes.push(userId);  // If not liked, add user to likes
-        } else {
-            post.likes.splice(likedIndex, 1);  // If already liked, remove user from likes
-        }
+    const likedIndex = post.likes.indexOf(user._id.toString());
 
-        await post.save();  // Save changes in DB
-        res.json({ likes: post.likes.length });  // Send updated like count
-    } catch (err) {
-        res.status(500).json({ message: "Server Error" });
+    if (likedIndex === -1) {
+      post.likes.push(user._id);
+    } else {
+      post.likes.splice(likedIndex, 1);
     }
+
+    await post.save();
+    res.json({ likes: post.likes.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
 });
 
+// Comment on a post
 app.post('/comment/:postId', isloggedin, async (req, res) => {
-    try {
-        const { postId } = req.params;
-        const { text } = req.body;
+  try {
+    console.log(req.params.postId);
 
-        if (!text || text.trim() === "") {
-            return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-        }
+    const { text } = req.body;
+    const { postId } = req.params;
+    const user = await userModel.findOne({ mail: req.user.mail });
+    const post = await postModel.findById(postId);
 
-        const post = await postModel.findById(postId);
-        if (!post) {
-            return res.status(404).json({ success: false, message: "Post not found" });
-        }
+    if (!post) return res.status(404).send("Post not found");
 
-        const comment = {
-            user: req.user._id, // Logged-in user
-            text,
-            createdAt: new Date()
-        };
+    // Create the comment
+    const comment = { user: user._id, content: text };
 
-        post.comments.push(comment);
-        await post.save();
+    // Add comment to post
+    post.comments.push({
+      text: text, 
+      user: user._id
+    });
 
-        res.status(201).json({ 
-            success: true, 
-            message: "Comment added successfully", 
-            comment: { 
-                user: req.user.fname, 
-                text, 
-                createdAt: comment.createdAt 
-            } 
-        });
-    } catch (err) {
-        console.error("Error adding comment:", err);
-        res.status(500).json({ success: false, message: "Server error" });
-    }
+    await post.save(); // Save the updated post with the new comment
+
+    res.redirect('/main'); // Redirect to the main page or wherever you want
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error while commenting");
+  }
 });
 
-app.get('/p',async(req, res) => {
-    let ps= await postModel.find().populate('user');
-res.send(ps)   
-})
+// Ask AI
+
+app.post('/ask-ai', async (req, res) => {
+    const { question } = req.body;
+  
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer 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`, // Replace with your actual Groq API Key
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
+          messages: [{ role: "user", content: question }],
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Groq API Error:', errorData);
+        return res.status(500).json({ error: 'Groq API error occurred.' });
+      }
+  
+      const responseData = await response.json(); // Get the full response at once
+      console.log('Response from AI:', responseData.choices[0].message.content); // Log the full response for debugging
+  
+      // Extract the assistant's message content from the response
+      const message = responseData.choices[0]?.message?.content;
+  
+      if (message) {
+        res.json({ success: true, choices: [{ message: { content: message } }] }); // Send the correct structure to the frontend
+      } else {
+        res.status(500).json({ error: 'No message found in AI response.' });
+      }
+  
+    } catch (error) {
+      console.error('Server Error:', error.message);
+      res.status(500).json({ error: 'Something went wrong while talking to AI.' });
+    }
+  });
+  
+  
+  
+  
+  
+  
+
+// Logout
+app.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/');
+});
+
+const NEWS_API_KEY = '055d2253b47c4fa1b315164034898ee3'; // get it free from newsapi.org
+
+app.get('/updates', async (req, res) => {
+  try {
+    const newsResponse = await fetch(`https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=5&apiKey=${NEWS_API_KEY}`);
+    const newsData = await newsResponse.json();
+
+    const articles = newsData.articles.map(article => ({
+      title: article.title,
+      description: article.description,
+      url: article.url
+    }));
+
+    res.json({ success: true, articles });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to fetch updates." });
+  }
+});
+
+  
+// Start server
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
